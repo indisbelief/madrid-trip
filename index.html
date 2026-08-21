@@ -432,6 +432,19 @@ const CATS=['Все',...new Set(PLACES.map(p=>p.c))];
 const EMO={'Все':'📍','Музеи':'🖼','Главное':'⭐','Парки и виды':'🌳','Еда':'🥘','Бары и вечер':'🍷','Районы':'🏘','Рынки и винтаж':'🛍','За городом':'🚂'};
 const em=c=>EMO[c]||'📍';
 // запрос для TikTok/Instagram: испанское название без скобок, у городских — с «Madrid»
+// Хэштег для TikTok/Instagram. Поиск по ключевым словам с телефона не работает:
+// TikTok прячет его за логином, а приложение Instagram не умеет открывать keyword-поиск.
+// Страницы тегов открываются и в приложении, и без логина.
+const TAG={atocha:'atochamadrid',radiome:'rooftopmadrid'};
+const slugify=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function tag(p){
+  if(TAG[p.id])return TAG[p.id];
+  let b=p.q||p.w.replace(/\s*\(.*?\)\s*/g,' ').trim();
+  // в хэштеге хвост «Madrid» лишний, но после него нельзя оставлять предлог: «Museo Naval de» → «Museo Naval»
+  const nm=b.replace(/\s*Madrid\s*$/i,'').replace(/\s+(de\s+la|de|del|la|el)\s*$/i,'').trim();
+  if(nm&&nm.split(/\s+/).length>=2)b=nm;
+  return slugify(b);
+}
 const sq=p=>{
   if(p.q)return encodeURIComponent(p.q);
   const base=p.w.replace(/\s*\(.*?\)\s*/g,' ').trim();
@@ -542,15 +555,15 @@ PLACES.forEach(p=>{
 
 function popup(p){
   const v=st(p.id);const el=document.createElement('div');
-  const qq=sq(p);
+  const qq=sq(p),tg=tag(p);
   el.innerHTML=`<div class="gal" data-gal="${p.id}"><div class="galempty">ищем фото…</div></div>
    <b>${p.n}</b>
    <span style="color:#7a7166;font-size:11px;text-transform:uppercase;letter-spacing:.07em">${em(p.c)} ${p.c} · ${dist(p)} от дома</span>
    <div style="margin-top:6px">${p.d}</div>
    <div class="pop-links">
      <a href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener">🗺 Маршрут</a>
-     <a href="https://www.tiktok.com/search?q=${qq}" target="_blank" rel="noopener">🎵 TikTok</a>
-     <a href="https://www.instagram.com/explore/search/keyword/?q=${qq}" target="_blank" rel="noopener">📸 Instagram</a>
+     <a href="https://www.tiktok.com/tag/${tg}" target="_blank" rel="noopener">🎵 TikTok</a>
+     <a href="https://www.instagram.com/explore/tags/${tg}/" target="_blank" rel="noopener">📸 Instagram</a>
    </div>
    <div class="pop-hearts">
      <button data-p="d" class="${v.d?'on':''}">${v.d?'♥':'♡'} Даниил</button>
