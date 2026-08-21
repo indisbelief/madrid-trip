@@ -159,8 +159,8 @@ aside{border-right:1px solid var(--line);display:flex;flex-direction:column;min-
 /* ────────── СИНХРОНИЗАЦИЯ ──────────
    Вставь сюда данные своего проекта Supabase, и отметки станут общими
    для всех устройств. Пусто → всё работает локально + через ссылку.  */
-const SUPABASE_URL = '';   // например: https://abcdefgh.supabase.co
-const SUPABASE_KEY = '';   // anon public key
+const SUPABASE_URL = 'https://ypquxtcjjwfqqrntepgz.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwcXV4dGNqandmcXFybnRlcGd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMDI1NjcsImV4cCI6MjEwMjg3ODU2N30.Fn-WhpwLEi4i9pxYc4oM8FGZJZfZEw2sXtpAKMek8f8';
 /* ─────────────────────────────────── */
 
 const PLACES=[
@@ -336,8 +336,16 @@ async function load(){
   if(h){const v=dec(h);if(v){for(const k in v){votes[k]={d:!!(st(k).d||v[k].d),m:!!(st(k).m||v[k].m)}}saveLocal()}}
   if(CLOUD){
     setSync('local','синхронизация…');
-    await pull();
-    Object.keys(votes).forEach(id=>{if(st(id).d||st(id).m)push(id)}); // догоняем то, что было офлайн
+    const local=JSON.parse(JSON.stringify(votes)); // то, что было офлайн или пришло по ссылке
+    await pull();                                  // votes := серверные
+    // сливаем: отметка, поставленная где угодно, остаётся отметкой
+    const toPush=[];
+    for(const id in local){
+      const l=local[id],s=st(id);
+      const merged={d:!!(l.d||s.d),m:!!(l.m||s.m)};
+      if(merged.d!==s.d||merged.m!==s.m){votes[id]=merged;toPush.push(id)}
+    }
+    if(toPush.length){saveLocal();render();await Promise.all(toPush.map(push))}
     setInterval(pull,5000);
     addEventListener('focus',pull);
   }else{
