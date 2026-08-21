@@ -497,7 +497,8 @@ const em=c=>EMO[c]||'📍';
 // Страницы тегов открываются и в приложении, и без логина.
 const TAG={atocha:'atochamadrid',radiome:'rooftopmadrid',
  sacha:'restaurantesacha',santurce:'barsanturce',casajulio:'casajulio',
- triciclo:'triciclomadrid',coque:'restaurantecoque',saddle:'saddlemadrid'};
+ triciclo:'triciclomadrid',coque:'restaurantecoque',saddle:'saddlemadrid',
+ juanaloca:'juanalalocamadrid',ricla:'vermutmadrid'};
 const slugify=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
 function tag(p){
   if(TAG[p.id])return TAG[p.id];
