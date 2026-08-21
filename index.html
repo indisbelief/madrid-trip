@@ -76,12 +76,34 @@ aside{border-right:1px solid var(--line);display:flex;flex-direction:column;min-
 .pin{width:13px;height:13px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);background:#9a9186}
 .pin.d{background:var(--d)}.pin.m{background:var(--m)}
 .pin.both{background:var(--both);width:20px;height:20px}
-.leaflet-popup-content{font-family:Manrope;font-size:13px;margin:10px 12px;min-width:230px}
+.leaflet-popup-content{font-family:Manrope;font-size:13px;margin:10px 12px;min-width:290px;max-width:320px}
 .leaflet-popup-content b{font-family:Fraunces,serif;font-size:16px;font-weight:500;display:block;margin-bottom:2px}
 .pop-hearts{display:flex;gap:6px;margin-top:9px}
 .pop-hearts button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font:600 12px Manrope;cursor:pointer;color:var(--muted)}
 .pop-hearts button[data-p="d"].on{border-color:var(--d);color:#fff;background:var(--d)}
 .pop-hearts button[data-p="m"].on{border-color:var(--m);color:#fff;background:var(--m)}
+/* галерея в попапе */
+.gal{display:flex;gap:5px;overflow-x:auto;margin:0 0 9px;padding-bottom:3px;scrollbar-width:thin;min-height:96px}
+.gal img{height:96px;width:auto;max-width:none;border-radius:7px;cursor:zoom-in;flex:none;background:var(--tile);object-fit:cover;transition:opacity .15s}
+.gal img:hover{opacity:.85}
+.galempty{height:96px;display:grid;place-items:center;width:100%;background:var(--tile);border-radius:7px;color:var(--muted);font-size:12px}
+.pop-links{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.pop-links a{flex:1;text-align:center;white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 8px;font:600 11px Manrope;color:var(--ink);text-decoration:none}
+.pop-links a:hover{background:var(--tile)}
+/* лайтбокс */
+.lb{position:fixed;inset:0;z-index:5000;background:rgba(20,16,10,.93);display:flex;align-items:center;justify-content:center;gap:8px;padding:20px}
+.lb figure{margin:0;max-width:90vw;max-height:88vh;display:flex;flex-direction:column;align-items:center;gap:10px}
+.lb img{max-width:88vw;max-height:78vh;border-radius:8px;object-fit:contain;background:#000}
+.lb figcaption{display:flex;gap:14px;align-items:center;color:#f2ece0;font-size:12px;flex-wrap:wrap;justify-content:center}
+.lb figcaption a{color:#e0c890}
+.lb button{background:rgba(255,255,255,.12);border:0;color:#fff;cursor:pointer;border-radius:50%;width:44px;height:44px;font-size:24px;line-height:1;flex:none}
+.lb button:hover{background:rgba(255,255,255,.24)}
+.lb .lbx{position:absolute;top:16px;right:16px;font-size:18px;width:38px;height:38px}
+@media (max-width:820px){
+  .lb{padding:10px;gap:4px}
+  .lb button{width:36px;height:36px;font-size:20px}
+  .lb img{max-width:78vw}
+}
 .legend{position:absolute;bottom:18px;right:14px;z-index:800;background:rgba(247,242,232,.94);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;display:grid;gap:5px}
 .legend div{display:flex;align-items:center;gap:8px}
 .legend .pin{width:12px;height:12px}
@@ -206,7 +228,7 @@ const PLACES=[
  {id:'chamberi',w:'Estación de Chamberí',n:'Станция-призрак Чамбери',c:'Главное',lat:40.4360,lng:-3.7030,d:'Станция метро, закрытая в 1966-м и застывшая с рекламой тех лет. Бесплатно.'},
  {id:'cinedore',w:'Cine Doré',n:'Кинотеатр Доре',c:'Главное',lat:40.4122,lng:-3.6990,d:'Модернистская Filmoteca 1923 года: старое кино за 3 евро и летняя крыша.'},
  {id:'condeduque',w:'Cuartel del Conde Duque',n:'Конде-Дуке',c:'Главное',lat:40.4272,lng:-3.7115,d:'Казармы XVIII века → культурный центр: выставки, дворы, концерты летом.'},
- {id:'tabacalera',w:'Tabacalera (Madrid)',n:'Табакалера',c:'Главное',lat:40.4066,lng:-3.7005,d:'Старая табачная фабрика, отданная стрит-арту. Стены переписывают постоянно.'},
+ {id:'tabacalera',q:'Tabacalera Lavapies Madrid',w:'Tabacalera (Madrid)',n:'Табакалера',c:'Главное',lat:40.4066,lng:-3.7005,d:'Старая табачная фабрика, отданная стрит-арту. Стены переписывают постоянно.'},
 
  // ─── Парки и виды ───
  {id:'retiro',w:'Parque del Retiro',n:'Парк Ретиро',c:'Парки и виды',lat:40.4153,lng:-3.6844,d:'Лодки на пруду, розарий, павлины. Идеально после Прадо — они рядом.'},
@@ -233,27 +255,27 @@ const PLACES=[
  {id:'paz',w:'Mercado de la Paz',n:'Рынок Ла-Пас',c:'Еда',lat:40.4256,lng:-3.6835,d:'Рынок в Саламанке, а внутри Casa Dani — по общему мнению лучшая тортилья города.'},
  {id:'botin',w:'Sobrino de Botín',n:'Sobrino de Botín',c:'Еда',lat:40.4142,lng:-3.7079,d:'Старейший ресторан мира по Гиннессу (1725). Молочный поросёнок, дровяная печь.'},
  {id:'sangines',w:'Chocolatería San Ginés',n:'Чуррерия Сан-Хинес',c:'Еда',lat:40.4166,lng:-3.7067,d:'Чуррос с густым шоколадом с 1894 года. Работает почти круглосуточно.'},
- {id:'cavabaja',w:'Cava Baja',n:'Улица Кава-Баха',c:'Еда',lat:40.4123,lng:-3.7098,d:'Плотный ряд тапас-баров. Тактика: по одной тапе и бокалу в каждом, не садиться.'},
+ {id:'cavabaja',q:'Cava Baja Madrid',w:'Cava Baja',n:'Улица Кава-Баха',c:'Еда',lat:40.4123,lng:-3.7098,d:'Плотный ряд тапас-баров. Тактика: по одной тапе и бокалу в каждом, не садиться.'},
  {id:'casalucio',w:'Casa Lucio',n:'Casa Lucio',c:'Еда',lat:40.4118,lng:-3.7095,d:'Легендарные huevos rotos — яйца с картошкой. Бронировать сильно заранее.'},
  {id:'casalabra',w:'Casa Labra',n:'Casa Labra',c:'Еда',lat:40.4172,lng:-3.7047,d:'Таверна 1860 года у Соль: жареная треска и крокеты у стойки, стоя.'},
- {id:'abuelo',w:'Tapa (gastronomía)',n:'La Casa del Abuelo',c:'Еда',lat:40.4157,lng:-3.7015,d:'Креветки в чесноке с 1906 года. Обжигающая сковородка и сладкое вино к ней.'},
- {id:'venencia',w:'Venencia',n:'La Venencia',c:'Еда',lat:40.4152,lng:-3.6997,d:'Хересный бар без изменений с 1930-х: только шерри, счёт мелом на стойке, фото запрещены.'},
+ {id:'abuelo',q:'La Casa del Abuelo Madrid',w:'Tapa (gastronomía)',n:'La Casa del Abuelo',c:'Еда',lat:40.4157,lng:-3.7015,d:'Креветки в чесноке с 1906 года. Обжигающая сковородка и сладкое вино к ней.'},
+ {id:'venencia',q:'La Venencia Madrid',w:'Venencia',n:'La Venencia',c:'Еда',lat:40.4152,lng:-3.6997,d:'Хересный бар без изменений с 1930-х: только шерри, счёт мелом на стойке, фото запрещены.'},
  {id:'lhardy',w:'Lhardy',n:'Lhardy',c:'Еда',lat:40.4157,lng:-3.7013,d:'Ресторан 1839 года. Внизу — самообслуживание: косидо в бульоне и сэндвичи.'},
- {id:'diverxo',w:'David Muñoz (cocinero)',n:'DiverXO',c:'Еда',lat:40.4530,lng:-3.6890,d:'Три звезды Мишлен, Давид Муньос. Дорого и брать надо за месяцы вперёд.'},
- {id:'platea',w:'Platea Madrid',n:'Platea',c:'Еда',lat:40.4266,lng:-3.6880,d:'Гастропространство в бывшем кинотеатре: несколько кухонь, шоу на сцене.'},
- {id:'casamingo',w:'Casa Mingo',n:'Casa Mingo',c:'Еда',lat:40.4270,lng:-3.7255,d:'Астурийская сидрерия с 1888-го: курица-гриль и сидр из бочки. Рядом с Эрмитой Гойи.'},
+ {id:'diverxo',q:'DiverXO',w:'David Muñoz (cocinero)',n:'DiverXO',c:'Еда',lat:40.4530,lng:-3.6890,d:'Три звезды Мишлен, Давид Муньос. Дорого и брать надо за месяцы вперёд.'},
+ {id:'platea',q:'Platea Madrid',w:'Platea Madrid',n:'Platea',c:'Еда',lat:40.4266,lng:-3.6880,d:'Гастропространство в бывшем кинотеатре: несколько кухонь, шоу на сцене.'},
+ {id:'casamingo',q:'Casa Mingo Madrid',w:'Casa Mingo',n:'Casa Mingo',c:'Еда',lat:40.4270,lng:-3.7255,d:'Астурийская сидрерия с 1888-го: курица-гриль и сидр из бочки. Рядом с Эрмитой Гойи.'},
  {id:'usera',w:'Usera',n:'Усера — китайский квартал',c:'Еда',lat:40.3860,lng:-3.7060,d:'Настоящий чайнатаун Мадрида: дим-сам, лапша, сычуань. Совсем не для туристов.'},
 
  // ─── Бары и вечер ───
  {id:'santaana',w:'Plaza de Santa Ana',n:'Пласа-де-Санта-Ана',c:'Бары и вечер',lat:40.4145,lng:-3.7000,d:'Площадь-гостиная с террасами по кругу. Старт вечера в квартале Лас-Летрас.'},
  {id:'dosdemayo',w:'Plaza del Dos de Mayo',n:'Пласа-дос-де-Майо',c:'Бары и вечер',lat:40.4269,lng:-3.7040,d:'Сердце Маласаньи: молодёжь с пивом прямо на площади, бары по периметру.'},
- {id:'picalagartos',w:'Gran Vía (Madrid)',n:'Picalagartos Sky Bar',c:'Бары и вечер',lat:40.4197,lng:-3.7024,d:'Крыша прямо над Гран-Виа. Коктейль дорогой, но вид на проспект сверху — тот самый.'},
- {id:'radiome',w:'Plaza de Santa Ana',n:'Radio Rooftop (ME Madrid)',c:'Бары и вечер',lat:40.4145,lng:-3.7003,d:'Модная крыша над Санта-Аной с диджеем. Фейсконтроль, лучше бронь.'},
- {id:'joy',w:'Teatro Eslava',n:'Joy Eslava',c:'Бары и вечер',lat:40.4166,lng:-3.7062,d:'Клуб в театре 1871 года, работает каждый день с 1981-го. Мадридская классика.'},
- {id:'cardamomo',w:'Flamenco',n:'Фламенко Cardamomo',c:'Бары и вечер',lat:40.4148,lng:-3.6987,d:'Небольшой таблао без ужина — только танец, час с небольшим. Часто лучший выбор.'},
+ {id:'picalagartos',q:'Picalagartos Sky Bar Madrid',w:'Gran Vía (Madrid)',n:'Picalagartos Sky Bar',c:'Бары и вечер',lat:40.4197,lng:-3.7024,d:'Крыша прямо над Гран-Виа. Коктейль дорогой, но вид на проспект сверху — тот самый.'},
+ {id:'radiome',q:'Radio Rooftop ME Madrid',w:'Plaza de Santa Ana',n:'Radio Rooftop (ME Madrid)',c:'Бары и вечер',lat:40.4145,lng:-3.7003,d:'Модная крыша над Санта-Аной с диджеем. Фейсконтроль, лучше бронь.'},
+ {id:'joy',q:'Joy Eslava Madrid',w:'Teatro Eslava',n:'Joy Eslava',c:'Бары и вечер',lat:40.4166,lng:-3.7062,d:'Клуб в театре 1871 года, работает каждый день с 1981-го. Мадридская классика.'},
+ {id:'cardamomo',q:'Cardamomo Madrid',w:'Flamenco',n:'Фламенко Cardamomo',c:'Бары и вечер',lat:40.4148,lng:-3.6987,d:'Небольшой таблао без ужина — только танец, час с небольшим. Часто лучший выбор.'},
  {id:'corralmoreria',w:'Corral de la Morería',n:'Corral de la Morería',c:'Бары и вечер',lat:40.4131,lng:-3.7143,d:'Самое известное таблао мира с 1956-го, при нём ресторан со звездой Мишлен.'},
- {id:'ojala',w:'Malasaña',n:'Ojalá — пляж в подвале',c:'Бары и вечер',lat:40.4249,lng:-3.7043,d:'Кафе в Маласанье, где нижний зал засыпан песком и стоят низкие столики.'},
- {id:'ginkgo',w:'Torre de Madrid',n:'Ginkgo Sky Bar',c:'Бары и вечер',lat:40.4237,lng:-3.7125,d:'Крыша с бассейном над Пласа-де-Эспанья: закат прямо в сторону Дебода.'},
+ {id:'ojala',q:'Ojala Madrid',w:'Malasaña',n:'Ojalá — пляж в подвале',c:'Бары и вечер',lat:40.4249,lng:-3.7043,d:'Кафе в Маласанье, где нижний зал засыпан песком и стоят низкие столики.'},
+ {id:'ginkgo',q:'Ginkgo Sky Bar Madrid',w:'Torre de Madrid',n:'Ginkgo Sky Bar',c:'Бары и вечер',lat:40.4237,lng:-3.7125,d:'Крыша с бассейном над Пласа-де-Эспанья: закат прямо в сторону Дебода.'},
 
  // ─── Районы ───
  {id:'malasana',w:'Malasaña',n:'Маласанья',c:'Районы',lat:40.4256,lng:-3.7043,d:'Винтаж, спешелти-кофе, пластинки, граффити. Гулять по Velarde и Espíritu Santo.'},
@@ -267,8 +289,8 @@ const PLACES=[
 
  // ─── Рынки и винтаж ───
  {id:'rastro',w:'El Rastro',n:'Эль-Растро',c:'Рынки и винтаж',lat:40.4095,lng:-3.7080,d:'Гигантская барахолка: антиквариат, посуда, пластинки, старьё. Только по воскресеньям утром.'},
- {id:'motores',w:'Mercado de Motores',n:'Меркадо-де-Моторес',c:'Рынки и винтаж',lat:40.3930,lng:-3.6940,d:'Винтаж-маркет среди паровозов в Железнодорожном музее. Один уикенд в месяц.'},
- {id:'casadiego',w:'Abanico',n:'Casa de Diego — веера',c:'Рынки и винтаж',lat:40.4171,lng:-3.7031,d:'Лавка вееров и зонтов на Соль с 1858 года. Лучший сувенир из Мадрида.'},
+ {id:'motores',q:'Mercado de Motores Madrid',w:'Mercado de Motores',n:'Меркадо-де-Моторес',c:'Рынки и винтаж',lat:40.3930,lng:-3.6940,d:'Винтаж-маркет среди паровозов в Железнодорожном музее. Один уикенд в месяц.'},
+ {id:'casadiego',q:'Casa de Diego Madrid',w:'Abanico',n:'Casa de Diego — веера',c:'Рынки и винтаж',lat:40.4171,lng:-3.7031,d:'Лавка вееров и зонтов на Соль с 1858 года. Лучший сувенир из Мадрида.'},
  {id:'fuencarral',w:'Calle de Fuencarral',n:'Улица Фуэнкарраль',c:'Рынки и винтаж',lat:40.4245,lng:-3.7010,d:'Пешеходная торговая улица между Гран-Виа и Маласаньей: марки, винтаж, кроссовки.'},
 
  // ─── За городом ───
@@ -285,6 +307,15 @@ const PLACES=[
 const HOME={lat:40.4258,lng:-3.7137,n:'Наш Airbnb',a:'Calle de la Princesa, 22'};
 const byId={};PLACES.forEach(p=>byId[p.id]=p);
 const CATS=['Все',...new Set(PLACES.map(p=>p.c))];
+const EMO={'Все':'📍','Музеи':'🖼','Главное':'⭐','Парки и виды':'🌳','Еда':'🥘','Бары и вечер':'🍷','Районы':'🏘','Рынки и винтаж':'🛍','За городом':'🚂'};
+const em=c=>EMO[c]||'📍';
+// запрос для TikTok/Instagram: испанское название без скобок, у городских — с «Madrid»
+const sq=p=>{
+  if(p.q)return encodeURIComponent(p.q);
+  const base=p.w.replace(/\s*\(.*?\)\s*/g,' ').trim();
+  const add=p.c!=='За городом'&&!/madrid/i.test(base);
+  return encodeURIComponent(base+(add?' Madrid':''));
+};
 const NAME={d:'Даниил',m:'Милена'};
 const KEY='madrid-votes', WHOKEY='madrid-who';
 
@@ -365,27 +396,97 @@ L.marker([HOME.lat,HOME.lng],{icon:homeIcon,zIndexOffset:1000}).addTo(map).bindP
 function km(a){const R=6371,dLat=(a.lat-HOME.lat)*Math.PI/180,dLng=(a.lng-HOME.lng)*Math.PI/180;const x=Math.sin(dLat/2)**2+Math.cos(HOME.lat*Math.PI/180)*Math.cos(a.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 function dist(p){const d=km(p);return d<1?Math.round(d*1000)+' м':d.toFixed(1)+' км'}
 function icon(id){return L.divIcon({className:'',html:`<div class="pin ${cls(id)}"></div>`,iconSize:[20,20],iconAnchor:[10,10]})}
+// приближение к месту: за городом ближе не нужно, по городу — вплотную к улице
+function zoomTo(p,force){
+  const far=p.c==='За городом', target=far?12:17;
+  const z=map.getZoom();
+  map.flyTo([p.lat,p.lng],(force||z<target)?target:z,{duration:.7});
+}
 
 const markers={};
 PLACES.forEach(p=>{
   const mk=L.marker([p.lat,p.lng],{icon:icon(p.id)}).addTo(map).bindPopup(()=>popup(p));
-  mk.on('click',()=>highlight(p.id));
+  mk.on('click',()=>{highlight(p.id);zoomTo(p)});
   mk.on('dblclick',()=>toggle(p.id,who));
   markers[p.id]=mk;
 });
 
 function popup(p){
   const v=st(p.id);const el=document.createElement('div');
-  el.innerHTML=`<div class="img pop" data-img="${p.id}"></div><b>${p.n}</b>
-   <span style="color:#7a7166;font-size:11px;text-transform:uppercase;letter-spacing:.07em">${p.c} · ${dist(p)} от дома</span>
+  const qq=sq(p);
+  el.innerHTML=`<div class="gal" data-gal="${p.id}"><div class="galempty">ищем фото…</div></div>
+   <b>${p.n}</b>
+   <span style="color:#7a7166;font-size:11px;text-transform:uppercase;letter-spacing:.07em">${em(p.c)} ${p.c} · ${dist(p)} от дома</span>
    <div style="margin-top:6px">${p.d}</div>
+   <div class="pop-links">
+     <a href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener">🗺 Маршрут</a>
+     <a href="https://www.tiktok.com/search?q=${qq}" target="_blank" rel="noopener">🎵 TikTok</a>
+     <a href="https://www.instagram.com/explore/search/keyword/?q=${qq}" target="_blank" rel="noopener">📸 Instagram</a>
+   </div>
    <div class="pop-hearts">
      <button data-p="d" class="${v.d?'on':''}">${v.d?'♥':'♡'} Даниил</button>
      <button data-p="m" class="${v.m?'on':''}">${v.m?'♥':'♡'} Милена</button>
    </div>`;
-  el.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();toggle(p.id,b.dataset.p);markers[p.id].openPopup()});
-  loadImg(el.querySelector('[data-img]'));
+  el.querySelectorAll('.pop-hearts button').forEach(b=>b.onclick=e=>{e.stopPropagation();toggle(p.id,b.dataset.p);markers[p.id].openPopup()});
+  fillGal(el.querySelector('[data-gal]'),p);
   return el;
+}
+
+/* ───────── галерея: Wikipedia + фото Wikimedia Commons по координатам ───────── */
+const galCache={};
+const JUNK=/logo|escudo|bandera|mapa|plano|location|map[_ ]of|coat[_ ]of|blason|flag|seal|diagram|plan[_ ]de/i;
+async function gallery(p){
+  if(galCache[p.id])return galCache[p.id];
+  const out=[];
+  const main=await thumb(p);
+  if(main)out.push({src:main,page:'https://es.wikipedia.org/wiki/'+encodeURIComponent(p.w)});
+  try{
+    const u=`https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2`
+      +`&generator=geosearch&ggscoord=${p.lat}%7C${p.lng}&ggsradius=${p.c==='За городом'?1200:220}`
+      +`&ggslimit=14&ggsnamespace=6&prop=imageinfo&iiprop=url&iiurlwidth=800&origin=*`;
+    const r=await fetch(u);
+    if(r.ok){
+      const j=await r.json();
+      ((j.query&&j.query.pages)||[]).forEach(x=>{
+        const t=x.title||'';
+        if(!x.imageinfo||!x.imageinfo[0])return;
+        if(/\.(svg|pdf|ogg|ogv|webm|tif|tiff|gif)$/i.test(t)||JUNK.test(t))return;
+        const ii=x.imageinfo[0];
+        out.push({src:ii.thumburl||ii.url,page:ii.descriptionurl});
+      });
+    }
+  }catch(e){}
+  const seen=new Set();
+  galCache[p.id]=out.filter(o=>{const k=(o.src||'').split('/').pop();if(!k||seen.has(k))return false;seen.add(k);return true}).slice(0,10);
+  return galCache[p.id];
+}
+async function fillGal(box,p){
+  if(!box)return;
+  const imgs=await gallery(p);
+  if(!imgs.length){box.innerHTML='<div class="galempty">фото не нашлось</div>';return}
+  box.innerHTML=imgs.map((o,i)=>`<img src="${o.src}" loading="lazy" data-i="${i}" alt="${p.n}">`).join('');
+  box.querySelectorAll('img').forEach(im=>im.onclick=e=>{e.stopPropagation();lightbox(imgs,+im.dataset.i,p.n)});
+}
+
+/* ───────── лайтбокс ───────── */
+function lightbox(imgs,start,title){
+  let i=start;
+  const lb=document.createElement('div');lb.className='lb';
+  lb.innerHTML=`<button class="lbx">✕</button><button class="lbp">‹</button>
+    <figure><img src="${imgs[i].src}" alt="${title}">
+    <figcaption><span></span><a href="" target="_blank" rel="noopener">фото: Wikimedia Commons ↗</a></figcaption></figure>
+    <button class="lbn">›</button>`;
+  const img=lb.querySelector('img'),cap=lb.querySelector('figcaption span'),link=lb.querySelector('figcaption a');
+  function show(){i=(i+imgs.length)%imgs.length;img.src=imgs[i].src;cap.textContent=`${title} · ${i+1}/${imgs.length}`;link.href=imgs[i].page||'#'}
+  show();
+  lb.querySelector('.lbp').onclick=e=>{e.stopPropagation();i--;show()};
+  lb.querySelector('.lbn').onclick=e=>{e.stopPropagation();i++;show()};
+  const close=()=>{lb.remove();removeEventListener('keydown',key)};
+  lb.querySelector('.lbx').onclick=close;
+  lb.onclick=e=>{if(e.target===lb)close()};
+  function key(e){if(e.key==='Escape')close();else if(e.key==='ArrowLeft'){i--;show()}else if(e.key==='ArrowRight'){i++;show()}}
+  addEventListener('keydown',key);
+  document.body.appendChild(lb);
 }
 
 /* ───────── картинки из Wikipedia, лениво ───────── */
@@ -434,7 +535,7 @@ function cardHtml(p){
   else if(v.m)marks='<span class="mk m">♥ Милена</span>';
   return `<div class="card ${v.d&&v.m?'both':''}" data-id="${p.id}">
     <div class="img" data-img="${p.id}"></div>
-    <div><div class="name">${p.n}</div><div class="cat">${p.c} · ${dist(p)} от дома</div></div>
+    <div><div class="name">${p.n}</div><div class="cat">${em(p.c)} ${p.c} · ${dist(p)} от дома</div></div>
     <div class="hearts">
       <button data-p="d" class="${v.d?'on':''}" title="Даниил">Д</button>
       <button data-p="m" class="${v.m?'on':''}" title="Милена">М</button>
@@ -450,7 +551,7 @@ function group(title,arr,klass){
 
 function render(){
   // фильтры
-  document.getElementById('filters').innerHTML=CATS.map(c=>`<button class="${c===filter?'on':''}" data-c="${c}">${c}</button>`).join('');
+  document.getElementById('filters').innerHTML=CATS.map(c=>`<button class="${c===filter?'on':''}" data-c="${c}">${em(c)} ${c}</button>`).join('');
   document.querySelectorAll('#filters button').forEach(b=>b.onclick=()=>{filter=b.dataset.c;render()});
 
   const pool=PLACES.filter(matches);
@@ -472,7 +573,7 @@ function render(){
 
   fillImgs(list);
   list.querySelectorAll('.card').forEach(c=>{
-    c.onclick=()=>{const p=byId[c.dataset.id];map.flyTo([p.lat,p.lng],p.c==='За городом'?10:15,{duration:.8});markers[p.id].openPopup();highlight(p.id)};
+    c.onclick=()=>{const p=byId[c.dataset.id];zoomTo(p,true);markers[p.id].openPopup();highlight(p.id)};
     c.querySelectorAll('.hearts button').forEach(b=>b.onclick=e=>{e.stopPropagation();toggle(c.dataset.id,b.dataset.p)});
   });
 
